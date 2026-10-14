@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Route Planner</title>
+<link rel="stylesheet" href="style.css"></head>
+<body><main>
+
+<section id="home">
+<h1>Route planner</h1>
+<p class="sub">Add points to make your route</p>
+<div class="hero">
+<button id="bNew">Create new plan<span>Requires internet connection</span></button>
+<button id="bView">View saved plan<span>Doesn't require internet connection</span></button>
+</div>
+<input type="file" id="file" accept=".tripplan,.json" hidden>
+</section>
+
+<section id="plan" hidden>
+<div class="row"><button class="back">Back</button><b>New plan</b></div>
+<div id="kn" class="box" hidden>The map background needs a free CARTO key. Get one at carto.com/basemaps/apikey (no account needed) and paste it into config.js. Until then the map shows an "API key required" notice and saved plans have no map.</div>
+<div id="map"></div>
+<div class="box">
+<label for="pn">Plan name</label><input id="pn" value="My trip">
+<label for="q">Search a place or enter a Plus Code (or tap the map)</label>
+<div class="row"><input id="q" placeholder="Howrah Station, or 7MV8+X2 Kolkata"><button id="find">Find</button></div>
+<div id="loc" class="m"></div>
+<label for="nm">Name</label><input id="nm">
+<label for="ty">Point type</label>
+<select id="ty"><option value="major">Major (set by you)</option><option value="minor">Minor (ordered automatically)</option></select>
+<div id="fM">
+<div class="g"><div><label for="en">Entry time (optional)</label><input id="en" type="datetime-local"></div>
+<div><label for="ex">Exit time (optional)</label><input id="ex" type="datetime-local"></div></div>
+</div>
+<div id="fm" hidden><label for="sg">Visit between</label><select id="sg"></select></div>
+<p><button class="p" id="add">Add point</button></p>
+</div>
+<div id="pl"></div>
+<h2>Routes between major points</h2><p class="m">Mode, travel time and fare belong to the route. Routes through minor stops are walked and calculated automatically.</p><div id="rt"></div>
+<button class="p" id="build">Build route</button>
+<div id="res"></div>
+</section>
+
+<section id="view" hidden>
+<div class="row"><button class="back">Back</button><b>Saved plan</b></div>
+<div id="out"></div>
+</section>
+
+</main>
+<script src="config.js"></script>
+<script src="app.js"></script></body></html>
