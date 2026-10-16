@@ -20,7 +20,7 @@ label{display:block;font-size:13px;color:var(--mut);margin:10px 0 3px}
 #home h1{font-size:clamp(34px,9vw,64px);font-weight:300;letter-spacing:.02em;line-height:1.05;text-transform:uppercase;margin:6vh 0 10px}
 #home .sub{font-size:clamp(18px,4.6vw,26px);font-weight:300;margin:0}
 .hero{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18vh}
-.hero button{background:var(--ln);color:#fff;border:0;border-radius:28px;padding:34px 10px;font-weight:300;text-transform:uppercase;font-size:clamp(18px,5vw,32px);line-height:1.25}
+.hero button{background:var(--ln);color:#fff;border:0;border-radius:28px;padding:34px 10px;font-weight:300;text-transform:uppercase;font-size:clamp(18px,5vw,32px);line-height:1.25;clip-path: polygon(0% 0%, 93% 7%, 100% 100%, 4% 100%);}
 .hero span{display:block;text-transform:none;font-size:clamp(12px,3.3vw,15px);margin-top:12px}
 .ln{border-left:4px solid var(--ln);margin:16px 0 0 10px;padding-left:22px}
 .st{position:relative;padding:4px 0 10px}
