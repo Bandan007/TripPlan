@@ -203,4 +203,36 @@ function mapInit(el,{mp,lines,dots}){
  s.innerHTML='<g>'+(mp?Object.keys(mp.t).map(k=>{const[x,y]=k.split('/');return`<image href="${mp.t[k]}" x="${x*256-ox}" y="${y*256-oy}" width="256" height="256"/>`}).join(''):'')+'</g><g>'
   +lines.map(l=>`<polyline fill="none" stroke="${l.c}" stroke-opacity="${l.a?.45:1}" stroke-width="${l.w?1.5:3}" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round" points="${l.g.map(p=>X(p[1]).toFixed(1)+','+Y(p[0]).toFixed(1)).join(' ')}"/>`).join('')+'</g><g></g>';
  const zb=document.createElement('div');zb.className='zb';
- zb.innerHTML='<button data-z="1" aria-label="Zoom in">+</button><button data-z="-1" aria-labe
+ zb.innerHTML='<button data-z="1" aria-label="Zoom in">+</button><button data-z="-1" aria-label="Zoom in">+</button><button data-z="-1" aria-label="Zoom out">&minus;</button><button data-z="0" aria-label="Show the whole route">&#8962;</button>';
+ el.append(s,zb);el.insertAdjacentHTML('beforeend','<div class="mh">Drag to move. Pinch or use + and - to zoom.</div>'+(mp?'<div class="at">&copy; OpenStreetMap contributors &copy; CARTO</div>':''));
+ function draw(){const[cw,ch]=sz(),k=v.w/cw,vx=v.cx-v.w/2,vy=v.cy-ch*k/2;s.setAttribute('viewBox',`${vx} ${vy} ${v.w} ${ch*k}`);
+  const P=(a,b)=>[(a-vx)/k,(b-vy)/k],pl=[],hit=b=>b.x<-2||b.y<-2||b.x+b.w>cw+2||b.y+b.h>ch+2||pl.some(p=>b.x<p.x+p.w&&b.x+b.w>p.x&&b.y<p.y+p.h&&b.y+b.h>p.y),
+  D=dots.map(d=>{const[x,y]=P(X(d.lng),Y(d.lat));return{d,x,y,r:d.m?7:5}});
+  D.forEach(q=>pl.push({x:q.x-q.r,y:q.y-q.r,w:2*q.r,h:2*q.r}));
+  const put=(txt,cands,fs,it)=>{const tw=txt.length*fs*.55+4,th=fs+4;
+   for(const[cx,cy]of cands(tw,th)){const b={x:cx,y:cy,w:tw,h:th};if(!hit(b)){pl.push(b);
+    return`<text x="${cx+2}" y="${cy+fs}" font-size="${fs}" ${it?'font-style="italic" ':''}font-weight="600" stroke="#fff" stroke-width="3" paint-order="stroke" fill="#1d1d1b">${esc(txt)}</text>`}}return''};
+  let o=D.map(q=>`<circle cx="${q.x}" cy="${q.y}" r="${q.r}" fill="${q.d.m?'#1d1d1b':'#7d7e77'}" stroke="#fff" stroke-width="2"/>`).join('');
+  [...D].sort((a,b)=>b.d.m-a.d.m).forEach(q=>{const c=(tw,th)=>[[q.x+q.r+3,q.y-th/2],[q.x-q.r-3-tw,q.y-th/2],[q.x-tw/2,q.y-q.r-3-th],[q.x-tw/2,q.y+q.r+3]];
+   o+=put(q.d.n+' '+q.d.name,c,12)||put(String(q.d.n),c,12)});
+  lines.forEach(l=>{if(!l.v||!l.g.length)return;const i=Math.floor((l.g.length-1)/2),a=l.g[i],b=l.g[i+1]||a,[mx,my]=P(X((a[1]+b[1])/2),Y((a[0]+b[0])/2));
+   o+=put(l.v,(tw,th)=>[[mx+6,my-th-4],[mx+6,my+4],[mx-tw-6,my-th-4],[mx-tw-6,my+4]],11,1)});
+  const g=s.children[2];g.setAttribute('transform',`translate(${vx} ${vy}) scale(${k})`);g.innerHTML=o}
+ function zoom(f,px,py){const r=el.getBoundingClientRect(),[cw,ch]=sz(),k=v.w/cw,dx=px-r.left-cw/2,dy=py-r.top-ch/2,
+  nw=Math.min(home*4,Math.max(cw*(mp?.06:.01),v.w*f)),nk=nw/cw;v.cx+=dx*(k-nk);v.cy+=dy*(k-nk);v.w=nw;draw()}
+ const ptr=new Map();
+ el.onpointerdown=e=>{if(e.target.closest('.zb'))return;el.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY])};
+ el.onpointermove=e=>{const old=ptr.get(e.pointerId);if(!old)return;ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptr.size==1){const k=v.w/sz()[0];v.cx-=(e.clientX-old[0])*k;v.cy-=(e.clientY-old[1])*k;draw()}
+  else if(ptr.size==2){const o=[...ptr].find(([id])=>id!=e.pointerId)[1],pd=Math.hypot(old[0]-o[0],old[1]-o[1]),nd=Math.hypot(e.clientX-o[0],e.clientY-o[1]);
+   if(pd&&nd)zoom(pd/nd,(e.clientX+o[0])/2,(e.clientY+o[1])/2)}};
+ el.onpointerup=el.onpointercancel=e=>ptr.delete(e.pointerId);
+ el.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY>0?1.25:.8,e.clientX,e.clientY)},{passive:false});
+ el.ondblclick=e=>{if(!e.target.closest('.zb'))zoom(.5,e.clientX,e.clientY)};
+ zb.onclick=e=>{const z=e.target.dataset.z;if(z==null)return;if(z=='0'){v=fit();draw()}else{const r=el.getBoundingClientRect();zoom(z=='1'?.5:2,r.left+r.width/2,r.top+r.height/2)}};
+ draw();if(window.ResizeObserver)new ResizeObserver(draw).observe(el)}
+
+$('#bView').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ try{const P=JSON.parse(await f.text());if(!Array.isArray(P.majors)||!Array.isArray(P.segs))throw 0;$('#out').innerHTML=html(P);show('view');initMaps()}
+ catch{alert('This is not a valid .tripplan file.')}e.target.value=''};
